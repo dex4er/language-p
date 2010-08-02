@@ -2161,4 +2161,26 @@ sub o_eval_regex {
     return $pc + 1;
 }
 
+sub o_sprintf {
+    my( $op, $runtime, $pc ) = @_;
+    my $args = pop @{$runtime->{_stack}};
+
+    my $iter = $args->iterator( $runtime );
+    if (not $iter->next( $runtime )) {
+        die "Not enough arguments for sprintf";
+    }
+    my $fmt = $iter->item( $runtime )->as_string;
+
+    my @list;
+    while( $iter->next( $runtime ) ) {
+        push @list, $iter->item( $runtime )->as_string;
+    }
+
+    my $val = sprintf $fmt, @list; # TODO sprintf reimplementation
+    push @{$runtime->{_stack}}, Language::P::Toy::Value::Scalar
+                                    ->new_string( $runtime, $val );
+
+    return $pc + 1;
+}
+
 1;
